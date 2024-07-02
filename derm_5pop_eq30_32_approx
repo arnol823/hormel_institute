@@ -1,0 +1,178 @@
+% Combined MATLAB Code to Estimate Parameters using Euler Method and Plot Results
+% based on 5 population epidermis data and equations 30-32 from colon stem
+% cell paper
+% Note plotting for estimated N_0 population is off. 
+
+% Load the dataset
+
+data = readtable('progression_of_labeled_nuclei_with_error.csv');
+
+
+% Extract the time vector and population data as {numerical arrays}
+t_data = data{:, 1}; % Time vector
+% column 2 is the number of mice measurements for each data point
+N_0 = data{:, 3}; % Population data for N_0 - basal 
+% column 4 is error
+N_1 = data{:, 5}; % Population data for N_1 - suprabasal1 
+% column 6 is error
+N_2 = data{:, 7}; % Population data for N_2 - suprabasal2
+% column 8 is error
+N_3 = data{:, 9}; % Population data for N_3 - suprabasal3
+% column 10 is error
+N_4 = data{:, 11}; % Population data for N_4 - suprabasal4
+% column 12 is error
+
+% what I could do is somehow add datapoints that are extrapolated from the
+% original dataset so that the steps are smaller and the model is more
+% accurate?
+
+% Calculate time step differences
+h = diff(t_data);
+
+% Parameters
+k0 = 0.1; % Example value for k0
+m0 = 0.01; % Example value for m0
+k1 = 0.1; % Example value for k1
+m1 = 0.01; % Example value for m1
+k2 = 0.1; % Example value for k2
+m2 = 0.01; % Example value for m2
+k3 = 0.1; % Example value for k3
+m3 = 0.01; % Example value for m3
+gamma = 0.1; % Example value for gamma
+
+%% N_0 Population
+num_points = length(N_0) - 1;
+N0_matrixA = zeros(num_points, 1);
+N0_matrixB = zeros(num_points, 1);
+
+for i = 1:num_points
+    N0_matrixA(i) = h(i) * N_0(i);
+    N0_matrixB(i) = N_0(i+1) - N_0(i) + h(i) * (k0 * N_0(i)^2) / (1 + m0 * N_0(i));
+end
+
+A = N0_matrixA;
+b = N0_matrixB;
+calA = A' * A;
+calB = A' * b;
+xhat = calA \ calB;
+a_minus_alpha2 = xhat
+x_temp=lsqminnorm(A,b,0.001)
+
+N_0_plot_values = zeros(num_points, 1);
+for i = 1:num_points
+    N_0_plot_values(i) = N_0(i) + h(i) * ((a_minus_alpha2 * N_0(i)) - (k0 * N_0(i)^2) / (1 + m0 * N_0(i)));
+end
+
+%% N_1 Population
+N1_matrixA = zeros(num_points, 2);
+N1_matrixB = zeros(num_points, 1);
+
+for i = 1:num_points
+    N1_matrixA(i, :) = [h(i) * N_1(i), h(i) * N_0(i)];
+    N1_matrixB(i) = N_1(i+1) - N_1(i) + h(i) * (k1 * N_1(i)^2 / (1 + m1 * N_1(i)) - k0 * N_0(i)^2 / (1 + m0 * N_0(i)));
+end
+
+A = N1_matrixA;
+b = N1_matrixB;
+calA = A' * A;
+calB = A' * b;
+xhat = calA \ calB;
+beta_minus_beta2 = xhat(1)
+alpha2 = xhat(2)
+x_temp=lsqminnorm(A,b,0.001)
+
+N_1_plot_values = zeros(num_points, 1);
+for i = 1:num_points
+    N_1_plot_values(i) = N_1(i) + h(i) * ((beta_minus_beta2 * N_1(i)) - (k1 * N_1(i)^2) / (1 + m1 * N_1(i)) + alpha2 * N_0(i) + (k0 * N_0(i)^2) / (1 + m0 * N_0(i)));
+end
+
+%% N_2 Population
+N2_matrixA = zeros(num_points, 2);
+N2_matrixB = zeros(num_points, 1);
+
+for i = 1:num_points
+    N2_matrixA(i, :) = [h(i) * N_2(i), h(i) * N_1(i)];
+    N2_matrixB(i) = N_2(i+1) - N_2(i) + h(i) * (k2 * N_2(i)^2 / (1 + m2 * N_2(i)) - k1 * N_1(i)^2 / (1 + m1 * N_1(i)));
+end
+
+A = N2_matrixA;
+b = N2_matrixB;
+calA = A' * A;
+calB = A' * b;
+xhat = calA \ calB;
+delta_minus_delta2 = xhat(1)
+beta2 = xhat(2)
+x_temp=lsqminnorm(A,b,0.001)
+
+N_2_plot_values = zeros(num_points, 1);
+for i = 1:num_points
+    N_2_plot_values(i) = N_2(i) + h(i) * ((delta_minus_delta2 * N_2(i)) - (k2 * N_2(i)^2) / (1 + m2 * N_2(i)) + beta2 * N_1(i) + (k1 * N_1(i)^2) / (1 + m1 * N_1(i)));
+end
+
+%% N_3 Population
+N3_matrixA = zeros(num_points, 2);
+N3_matrixB = zeros(num_points, 1);
+
+for i = 1:num_points
+     N3_matrixA(i, :) = [h(i) * N_3(i), h(i) * N_2(i)];
+     N3_matrixB(i) = N_3(i+1) - N_3(i) + h(i) * (k3 * N_3(i)^2 / (1 + m3 * N_3(i)) - k2 * N_2(i)^2 / (1 + m2 * N_2(i)));
+end
+
+A = N3_matrixA;
+b = N3_matrixB;
+calA = A' * A;
+calB = A' * b;
+xhat = calA \ calB;
+epsilon_minus_epsilon2 = xhat(1)
+delta2 = xhat(2)
+x_temp=lsqminnorm(A,b,0.001)
+
+N_3_plot_values = zeros(num_points, 1);
+for i = 1:num_points
+    N_3_plot_values(i) = N_3(i) + h(i) * ((epsilon_minus_epsilon2 * N_3(i)) - (k3 * N_3(i)^2) / (1 + m3 * N_3(i)) + delta2 * N_2(i) + (k2 * N_2(i)^2) / (1 + m2 * N_2(i)));
+end
+
+%% N_4 Population
+N4_matrixA = zeros(num_points, 1);
+N4_matrixB = zeros(num_points, 1);
+
+for i = 1:num_points
+    N4_matrixA(i) = h(i) * N_3(i);
+    N4_matrixB(i) = N_4(i+1) - N_4(i) + h(i) * (gamma * N_4(i) - k3 * N_3(i)^2 / (1 + m3 * N_3(i)));
+end
+
+A = N4_matrixA;
+b = N4_matrixB;
+calA = A' * A;
+calB = A' * b;
+xhat = calA \ calB;
+epsilon2 = xhat
+x_temp=lsqminnorm(A,b,0.001)
+
+N_4_plot_values = zeros(num_points, 1);
+for i = 1:num_points
+    N_4_plot_values(i) = N_4(i) + h(i) * (-gamma * N_4(i) + epsilon2 * N_3(i) + (k3 * N_3(i)^2) / (1 + m3 * N_3(i)));
+end
+
+% Shorten t_data for plotting
+t_data1 = t_data(1:end-1);
+
+% Plot all results on the same figure
+figure;
+hold on;
+plot(t_data1, N_0_plot_values, '-b', 'DisplayName', 'Estimated N_0');
+plot(t_data1, N_0(1:end-1), 'or', 'MarkerSize', 3, 'DisplayName', 'Original N_0 Data Points');
+plot(t_data1, N_1_plot_values, '-g', 'DisplayName', 'Estimated N_1');
+plot(t_data1, N_1(1:end-1), 'og', 'MarkerSize', 3, 'DisplayName', 'Original N_1 Data Points');
+plot(t_data1, N_2_plot_values, '-r', 'DisplayName', 'Estimated N_2');
+plot(t_data1, N_2(1:end-1), 'xr', 'MarkerSize', 3, 'DisplayName', 'Original N_2 Data Points');
+plot(t_data1, N_3_plot_values, '-m', 'DisplayName', 'Estimated N_3');
+plot(t_data1, N_3(1:end-1), 'sm', 'MarkerSize', 3, 'DisplayName', 'Original N_3 Data Points');
+plot(t_data1, N_4_plot_values, '-k', 'DisplayName', 'Estimated N_4');
+plot(t_data1, N_4(1:end-1), '*k', 'MarkerSize', 3, 'DisplayName', 'Original N_4 Data Points');
+hold off;
+
+title('Least Squares Fit for N_0, N_1, N_2, N_3, N_4 using Euler Method');
+xlabel('Time');
+ylabel('Population');
+legend('show');
