@@ -1,0 +1,44 @@
+ 
+% Load progression csv file into matlab to view the 5 population Dr. Morris
+% Epidermal Cell data
+
+% Load progression csv file into MATLAB
+data = readtable('/Users/morganarnold/Documents/MATLAB/Examples/R2024a/matlab/progression_of_labeled_nuclei_with_error.csv');
+
+% Extract data
+Days_following_H3TDR = data.Days_following_injection;
+N = data.N; 
+Basal = data.Basal;
+Basal_error = data.Basal_error;
+Suprabasal1 = data.Suprabasal1;
+Suprabasal1_error = data.Suprabasal1_error;
+Suprabasal2 = data.Suprabasal2;
+Suprabasal2_error = data.Suprabasal2_error;
+Suprabasal3 = data.Suprabasal3;
+Suprabasal3_error = data.Suprabasal3_error;
+Suprabasal4 = data.Suprabasal4;
+Suprabasal4_error = data.Suprabasal4_error;
+
+% Plot data with error bars
+figure;
+hold on;
+
+errorbar(Days_following_H3TDR, Basal, Basal_error, 'DisplayName', 'Basal');
+errorbar(Days_following_H3TDR, Suprabasal1, Suprabasal1_error, 'DisplayName', 'Suprabasal1');
+errorbar(Days_following_H3TDR, Suprabasal2, Suprabasal2_error, 'DisplayName', 'Suprabasal2');
+errorbar(Days_following_H3TDR, Suprabasal3, Suprabasal3_error, 'DisplayName', 'Suprabasal3');
+errorbar(Days_following_H3TDR, Suprabasal4, Suprabasal4_error, 'DisplayName', 'Suprabasal4');
+
+% Customize plot
+xlabel('Days Following H3TDR Injection');
+ylabel('Percentage of H3TDR Labelled Nuclei of each Cell Type');
+title('Progression of H3TDR Labeled Nuclei of each Cell Type with Error Bars');
+legend('Location', 'best');
+grid on;
+hold off;
+
+
+
+
+
+
