@@ -1,0 +1,28 @@
+% Load progression csv file into matlab to view the 2 population Dr. Morris
+% Epidermal Cell data
+
+% load and plot data
+data = readtable('/Users/morganarnold/Documents/MATLAB/Examples/R2024a/matlab/labeled_per_1000_nuclei_with_error.csv');
+
+% Extract data
+Days_following_H3TDR = data.Days_following_H3TDR;
+N = data.N; 
+Number_labeled_Basal = data.Number_labeled_Basal;
+Number_labeled_Basal_error = data.Number_labeled_Basal_error;
+Number_labeled_Suprabasal = data.Number_labeled_Suprabasal;
+Number_labeled_Suprabasal_error = data.Number_labeled_Suprabasal_error;
+
+% Plot data with error bars
+figure;
+hold on;
+
+errorbar(Days_following_H3TDR, Number_labeled_Basal, Number_labeled_Basal_error, 'DisplayName', 'Basal');
+errorbar(Days_following_H3TDR, Number_labeled_Suprabasal, Number_labeled_Suprabasal_error, 'DisplayName', 'Suprabasal');
+
+% Customize plot
+xlabel('Days Following H3TDR Injection');
+ylabel('H3TDR Labeled Nuclei per 1000 Nuclei');
+title('H3TDR Labeled Nuclei per 1000 Nuclei with Error Bars');
+legend('Location', 'best');
+grid on;
+hold off;
