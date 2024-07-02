@@ -2,6 +2,7 @@
 % based on 5 population epidermis data and equations 30-32 from colon stem
 % cell paper
 % Note plotting for estimated N_0 population is off. 
+% Also note: this script requires input values for k and m values - these are not based on data and are only example values. 
 
 % Load the dataset
 
