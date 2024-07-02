@@ -1,0 +1,36 @@
+% slope field for: (from equations 26-28 stem cell colon paper)
+% \[ \frac{dN_0}{dt} = N_0 (\alpha - \alpha_2) - k_0 N_0^2\]
+%\frac{dN_1}{dt} = -\gamma N_1  - k_1 N_1^2 + \alpha_2 N_0 + k_0 N_0^2
+
+
+% Parameters
+% note that these parameters will need to be adjusted because they are
+% absed on the approximations where gamma is approximated as zero
+alpha = 0.2602;
+alpha2 = 0.2121;
+gamma = 0.0;
+k0 = 0.0013;
+k1 = 1.5321e-4;
+
+% Define the system of equations
+dN0dt = @(N0, N1) N0 * (alpha - alpha2) - k0 * N0.^2;
+dN1dt = @(N0, N1) -gamma * N1 - k1 * N1.^2 + alpha2 * N0 + k0 * N0.^2;
+
+% Create a grid of points
+[N0, N1] = meshgrid(linspace(0, 10, 20), linspace(0, 10, 20));
+
+% Calculate the derivatives at each point
+dN0 = dN0dt(N0, N1);
+dN1 = dN1dt(N0, N1);
+
+% Plot the phase portrait
+figure;
+quiver(N0, N1, dN0, dN1, 'b');
+xlabel('N0');
+ylabel('N1');
+title({'Phase Portrait of the System', ...
+       '$\frac{dN_0}{dt} = N_0 (\alpha - \alpha_2) - k_0 N_0^2$', ...
+       '$\frac{dN_1}{dt} = -\gamma N_1  - k_1 N_1^2 + \alpha_2 N_0 + k_0 N_0^2$'}, ...
+       'Interpreter', 'latex');
+grid on;
+axis tight;
