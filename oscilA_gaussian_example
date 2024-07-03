@@ -1,0 +1,44 @@
+function f = generateOscillatingFunction(t, a1, a2, cycleLength, c1, c2)
+    % Generate an oscillating function with two peaks
+    % t          - Time array
+    % a1         - Height of the first peak
+    % a2         - Height of the second peak
+    % cycleLength- Total number of hours of the cycle (e.g., 24 hours)
+    % c1         - Width of the first peak
+    % c2         - Width of the second peak
+
+    % Calculate the positions of the peaks based on cycle length
+    b1 = cycleLength / 3;  % Position of the first peak (1/3 of the cycle length)
+    b2 = 2 * cycleLength / 3;  % Position of the second peak (2/3 of the cycle length)
+
+    % Gaussian functions
+    gaussian1 = a1 * exp(-((t - b1).^2) / (2 * c1^2));
+    gaussian2 = a2 * exp(-((t - b2).^2) / (2 * c2^2));
+
+    % Combined function
+    f = gaussian1 + gaussian2;
+end
+
+% Example usage:
+t = linspace(0, 24, 1000); % Time range from 0 to 24 hours
+a1 = 1; % Height of the first peak
+a2 = 1; % Height of the second peak
+cycleLength = 24; % Total number of hours of the cycle
+c1 = 1; % Width of the first peak
+c2 = 1; % Width of the second peak
+
+f = generateOscillatingFunction(t, a1, a2, cycleLength, c1, c2);
+
+% Plotting the function
+figure;
+plot(t, f, 'LineWidth', 2);
+hold on;
+yline(0, 'k', 'LineWidth', 0.5);
+xline(cycleLength / 3, 'r--', 'LineWidth', 1, 'Label', 'First peak');
+xline(2 * cycleLength / 3, 'b--', 'LineWidth', 1, 'Label', 'Second peak');
+title('Function with Two Peaks Representing Periods of Mitosis');
+xlabel('Time (hours)');
+ylabel('Function Value');
+legend('f(t)');
+grid on;
+hold off;
