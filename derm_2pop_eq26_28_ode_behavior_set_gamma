@@ -1,0 +1,58 @@
+% Epidermis ODE script (see longer term behavior and stability, be able to
+% model tumor and normal
+
+
+% based on 2 pop model from equations 26-28
+
+% Initial values
+N0_initial = 51;  
+N1_initial = 0;  
+
+% Initial population vector
+N_initial = [N0_initial; N1_initial];
+
+% Parameters
+alpha_minus_alpha2 = 0.0481;    
+k_0 = 0.0013;   % averaged 0 and 0.0026
+gamma = 1/28;   
+k_1 = 0;
+alpha2 = 0.2332; % previous: 0.2121
+
+% Time span
+t_span = [0 1000]; % Time from 0 to 1000
+
+%% Function
+function dNdt = populations(t, N, alpha_minus_alpha2, k_0, gamma, k_1, alpha2)
+    % Unpack the population variables
+    N0 = N(1);
+    N1 = N(2);
+    
+    % Define the differential equations
+    dN0dt = alpha_minus_alpha2 * N0 - k_0 * N0^2;
+    dN1dt = alpha2 * N0 + k_0 * N0^2 - gamma * N1 - k_1 * N1^2;
+    
+    % Return the derivatives as a column vector
+    dNdt = [dN0dt; dN1dt];
+end
+
+%%
+% Solve the differential equations
+[t, N] = ode45(@(t, N) populations(t, N, alpha_minus_alpha2, k_0, gamma, k_1, alpha2), t_span, N_initial);
+
+% Unpack the solution
+N0 = N(:, 1);
+N1 = N(:, 2);
+
+% Plot the results
+figure;
+hold on;
+plot(t, N0, '-b', 'DisplayName', 'N_0');
+plot(t, N1, '-g', 'DisplayName', 'N_1');
+hold off;
+
+title({'Population Dynamics Using ODE45', ...
+       '$\frac{dN_0}{dt} = (\alpha - \alpha_2) N_0 - k_0 N_0^2,\quad \frac{dN_1}{dt} = \alpha_2 N_0 + k_0 N_0^2 - \gamma N_1 - k_1 N_1^2$'}, ...
+      'Interpreter', 'latex');
+xlabel('Time');
+ylabel('Population');
+legend('show');
