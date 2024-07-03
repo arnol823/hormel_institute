@@ -1,0 +1,55 @@
+% Cell Cycle time equations
+% Parameters (note that these are made up values)
+Nt = 1000;  % Total number of cells
+Ts = 10;    % Length of S phase
+Ns = 200;   % Number of labeled cells
+TG2_1_2M = 5; % Length of G2 + 1/2 M phase
+LI = 0.1;   % Labeling index
+
+% Compute cell cycle lengths using each equation
+Tc_A = cell_cycle_A(Nt, Ts, Ns);
+Tc_B = cell_cycle_B(Ts, TG2_1_2M, LI);
+Tc_C = cell_cycle_C(Ts, LI);
+
+% Display the results
+fprintf('Cell Cycle Lengths:\n');
+fprintf('Equation A: Tc = %.2f\n', Tc_A);
+fprintf('Equation B: Tc = %.2f\n', Tc_B);
+fprintf('Equation C: Tc = %.2f\n', Tc_C);
+
+% Plot the results
+figure;
+
+% Equation A
+subplot(3, 1, 1);
+bar(Tc_A);
+title('Cell Cycle Length - Equation A');
+ylabel('Tc');
+set(gca, 'XTickLabel', {'Equation A'});
+
+% Equation B
+subplot(3, 1, 2);
+bar(Tc_B);
+title('Cell Cycle Length - Equation B');
+ylabel('Tc');
+set(gca, 'XTickLabel', {'Equation B'});
+
+% Equation C
+subplot(3, 1, 3);
+bar(Tc_C);
+title('Cell Cycle Length - Equation C');
+ylabel('Tc');
+set(gca, 'XTickLabel', {'Equation C'});
+
+% Function definitions
+function Tc = cell_cycle_A(Nt, Ts, Ns)
+    Tc = (Nt * Ts) / Ns;
+end
+
+function Tc = cell_cycle_B(Ts, TG2_1_2M, LI)
+    Tc = (Ts + sqrt(Ts^2 + 2 * (2 * TG2_1_2M * Ts + Ts^2) * LI)) / (2 * LI / log(2));
+end
+
+function Tc = cell_cycle_C(Ts, LI)
+    Tc = log(2) * (Ts / LI);
+end
