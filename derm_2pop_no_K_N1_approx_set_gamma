@@ -1,0 +1,96 @@
+% Two population model 
+% without the K terms 
+% with only !N1! for the gamma term 
+
+
+% Load the dataset
+
+data = readtable('labeled_per_1000_nuclei_with_error.csv');
+
+
+% Extract the time vector and population data as {numerical arrays}
+t_data = data{:, 1}; % Time vector
+% column 2 is the number of mice measurements for each data point
+N_0 = data{:, 3}; % Population data for N_0 - Number_labeled_Basal
+% column 4 is error
+N_1 = data{:, 5}; % Population data for N_1 - Number_labeled_Suprabasal 
+% column 6 is error
+
+% what I could do is somehow add datapoints that are extrapolated from the
+% original dataset so that the steps are smaller and the model is more
+% accurate?
+
+% Calculate time step differences
+h = diff(t_data);
+
+
+
+%% N_0 Population
+num_points = length(N_0) - 1;
+
+N0_matrixA = zeros(num_points, 2);
+N0_matrixB = zeros(num_points, 1);
+
+for i = 1:num_points
+    N0_matrixA(i, :) = [h(i) * N_0(i), -h(i) * N_0(i)^2]; %squared N_0 term
+    N0_matrixB(i) = N_0(i+1) - N_0(i); 
+end
+
+A = N0_matrixA; % positive and negative values (first column positive, second column negative)
+b = N0_matrixB; % positive and negative values
+calA = A' * A;
+calB = A' * b;
+% xhat = calA \ calB;
+xhat = lsqnonneg(A, b); % so that answers must be non-negative
+alpha = xhat(1) 
+alpha2 = xhat(2)
+x_temp =lsqminnorm(A,b,0.001)
+
+N_0_plot_values = zeros(num_points, 1); 
+for i = 1:num_points
+    N_0_plot_values(i) = N_0(i) + h(i) * (alpha * N_0(i) - alpha2 * N_0(i)^2); %squared N_0 term
+end % filled with NaN values - 
+
+
+
+%% N_1 Population
+
+N1_matrixA = zeros(num_points, 1); 
+N1_matrixB = zeros(num_points, 1); 
+
+for i = 1:num_points
+    N1_matrixA(i) = h(i) * N_0(i)^2; 
+    N1_matrixB(i) = N_1(i+1) - N_1(i) + h(i) * gamma * N_1(i); 
+end
+
+A = N1_matrixA;
+b = N1_matrixB;
+calA = A' * A;
+calB = A' * b;
+% xhat = calA \ calB;
+xhat = lsqnonneg(A, b);
+alpha2 = xhat(1)
+% gamma is already defined and constant
+
+N_1_plot_values = zeros(num_points, 1);
+for i = 1:num_points
+    N_1_plot_values(i) = N_1(i) + h(i) * (alpha2 * N_0(i)^2 - gamma * N_1(i)); 
+end
+
+% Shorten t_data for plotting
+t_data1 = t_data(1:end-1);
+
+% Plot all results on the same figure
+figure;
+hold on;
+plot(t_data1, N_0_plot_values, '-b', 'DisplayName', 'Estimated N_0');
+plot(t_data1, N_0(1:end-1), 'or', 'MarkerSize', 3, 'DisplayName', 'Original N_0 Data Points');
+plot(t_data1, N_1_plot_values, '-g', 'DisplayName', 'Estimated N_1');
+plot(t_data1, N_1(1:end-1), 'og', 'MarkerSize', 3, 'DisplayName', 'Original N_1 Data Points');
+hold off;
+
+% title('Least Squares Fit for N_0 & N_1 using Euler Method');
+title({'Least Squares Fit for $N_0$ \& $N_1$ using Euler Method', '$\frac{dN_0}{dt} = \alpha N_0 - \alpha_2 N_0^2,\quad \frac{dN_1}{dt} = \alpha_2 N_0^2 - \gamma N_1$'}, 'Interpreter', 'latex');
+xlabel('Time');
+ylabel('Population');
+legend('show');
