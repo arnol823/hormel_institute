@@ -1,0 +1,229 @@
+% file to determine alpha (converted labeled_per_1000_nuclei data into percentages and then found lines of best fit to get an average alpha value)
+
+
+% Load progression csv file into matlab to view the 2 population Dr. Morris
+% Epidermal Cell data
+
+% load and plot data
+data = readtable('/Users/morganarnold/Documents/MATLAB/Examples/R2024a/matlab/labeled_per_1000_nuclei_with_error.csv');
+
+% Extract data
+Days_following_H3TDR = data.Days_following_H3TDR;
+N = data.N; 
+Number_labeled_Basal = data.Number_labeled_Basal;
+Number_labeled_Basal_error = data.Number_labeled_Basal_error;
+Number_labeled_Suprabasal = data.Number_labeled_Suprabasal;
+Number_labeled_Suprabasal_error = data.Number_labeled_Suprabasal_error;
+Percentage_basal = data.Percentage_basal; 
+Percentage_suprabasal = data.Percentage_suprabasal; 
+
+% Plot data with error bars
+figure;
+hold on;
+
+errorbar(Days_following_H3TDR, Number_labeled_Basal, Number_labeled_Basal_error, 'DisplayName', 'Basal');
+errorbar(Days_following_H3TDR, Number_labeled_Suprabasal, Number_labeled_Suprabasal_error, 'DisplayName', 'Suprabasal');
+
+% Customize plot
+xlabel('Days Following H3TDR Injection');
+ylabel('H3TDR Labeled Nuclei per 1000 Nuclei');
+title('H3TDR Labeled Nuclei per 1000 Nuclei with Error Bars');
+legend('Location', 'best');
+grid on;
+hold off;
+
+figure; 
+hold on; 
+plot(Days_following_H3TDR, Percentage_basal, 'DisplayName', 'Basal Cell Percentage');
+plot(Days_following_H3TDR, Percentage_suprabasal, 'DisplayName', 'Suprabasal Cell Percentage'); 
+
+% Customize plot
+xlabel('Days Following H3TDR Injection');
+ylabel('Percentage of total Labeled Cells');
+title('H3TDR Labeled Nuclei per 1000 Nuclei Percentages Representing Basal and Suprabasal Populations');
+legend('Location', 'best'); 
+grid on;
+
+
+% Linear regression for basal population
+coeffs_basal = polyfit(Days_following_H3TDR, Percentage_basal, 1)
+fitted_basal = polyval(coeffs_basal, Days_following_H3TDR);
+plot(Days_following_H3TDR, fitted_basal, '--', 'DisplayName', 'Best Fit Line (Basal)');
+
+% Linear regression for suprabasal population
+coeffs_suprabasal = polyfit(Days_following_H3TDR, Percentage_suprabasal, 1)
+fitted_suprabasal = polyval(coeffs_suprabasal, Days_following_H3TDR);
+plot(Days_following_H3TDR, fitted_suprabasal, '--', 'DisplayName', 'Best Fit Line (Suprabasal)');
+
+hold off;
+
+%%%%%%%%%%%%%%
+% coeffs_basal =
+
+%   -8.4608  106.4915
+
+%coeffs_suprabasal =
+
+%    8.4608   -6.4915
+
+% Average alpha value = 8.4608
+% How to interpret this? 
+% Rate of change of basal cells to suprabasal cells as a percentage of total cells. 
+%% cells change by 8.5 % with every passing day after administration of marker. 
+
+% (in relation to total population of cells, therefore, we need to know the 
+% overall population in order to determine alpha value for the model.)
+
+% The average number of cells labeled each day / time point from this data was 96.8. 
+% Therefore, each day approximately 8.2 cells would graduate each day within an area of 1000 nuclei. 
+
+
+%%%%%%%%%%%%%%%%%
+% I want to also compare this value to the labeled progression dataset line of best fit of decrease in basal population and increase in suprabasal1 population. 
+% found that the decrease in basal cell populations from the 5 population dataset was relatively close (-7.2274 percentage decrease of basal cells per day in relation to total cell population)
+% So maybe the alpha value could be  ( (7.2274+8.4608)/2 ) * 96.8 cells  = # of cells that would graduate each day within an area of 1000 nuclei. 
+%%%% See code below: 
+
+% Load progression csv file into MATLAB to view the 5 population Dr. Morris
+% Epidermal Cell data & fit linear equations
+
+% Load data % tried to fit 2nd polynomial equations to each of the types of
+% data - not very useful for the modeling we want to do, which is dependent
+% on the populations in relation to each other. 
+data = readtable('progression_of_labeled_nuclei_with_error.csv');
+
+% Extract variables
+days = data.Days_following_injection;
+basal = data.Basal;
+basal_error = data.Basal_error;
+suprabasal1 = data.Suprabasal1;
+suprabasal1_error = data.Suprabasal1_error;
+suprabasal2 = data.Suprabasal2;
+suprabasal2_error = data.Suprabasal2_error;
+suprabasal3 = data.Suprabasal3;
+suprabasal3_error = data.Suprabasal3_error;
+suprabasal4 = data.Suprabasal4;
+suprabasal4_error = data.Suprabasal4_error;
+
+% Plot data with error bars
+figure;
+errorbar(days, basal, basal_error, 'o', 'DisplayName', 'Basal Data');
+hold on;
+errorbar(days, suprabasal1, suprabasal1_error, 'o', 'DisplayName', 'Suprabasal1 Data');
+errorbar(days, suprabasal2, suprabasal2_error, 'o', 'DisplayName', 'Suprabasal2 Data');
+errorbar(days, suprabasal3, suprabasal3_error, 'o', 'DisplayName', 'Suprabasal3 Data');
+errorbar(days, suprabasal4, suprabasal4_error, 'o', 'DisplayName', 'Suprabasal4 Data');
+xlabel('Days following H3TDR');
+ylabel('Percentage');
+title('Progression of Labeled Nuclei with Error Bars');
+legend('show');
+hold off;
+
+% Choose models
+% Basal model
+ft_basal = fittype('poly1'); % Polynomial model of degree 1 (linear fit)
+[fit_basal, gof_basal] = fit(days, basal, ft_basal);
+
+% Suprabasal1 model
+ft_suprabasal1 = fittype('poly1'); % Polynomial model of degree 1 (linear fit)
+[fit_suprabasal1, gof_suprabasal1] = fit(days, suprabasal1, ft_suprabasal1);
+
+% Suprabasal2 model
+ft_suprabasal2 = fittype('poly1'); % Polynomial model of degree 1 (linear fit)
+[fit_suprabasal2, gof_suprabasal2] = fit(days, suprabasal2, ft_suprabasal2);
+
+% Suprabasal3 model
+ft_suprabasal3 = fittype('poly1'); % Polynomial model of degree 1 (linear fit)
+[fit_suprabasal3, gof_suprabasal3] = fit(days, suprabasal3, ft_suprabasal3);
+
+% Suprabasal4 model
+ft_suprabasal4 = fittype('poly1'); % Polynomial model of degree 1 (linear fit)
+[fit_suprabasal4, gof_suprabasal4] = fit(days, suprabasal4, ft_suprabasal4);
+
+% Print equations
+fprintf('Basal model equation: y = %.4f * x + %.4f\n', fit_basal.p1, fit_basal.p2);
+fprintf('Suprabasal1 model equation: y = %.4f * x + %.4f\n', fit_suprabasal1.p1, fit_suprabasal1.p2);
+fprintf('Suprabasal2 model equation: y = %.4f * x + %.4f\n', fit_suprabasal2.p1, fit_suprabasal2.p2);
+fprintf('Suprabasal3 model equation: y = %.4f * x + %.4f\n', fit_suprabasal3.p1, fit_suprabasal3.p2);
+fprintf('Suprabasal4 model equation: y = %.4f * x + %.4f\n', fit_suprabasal4.p1, fit_suprabasal4.p2);
+
+% Plot fitted models
+figure;
+plot(days, basal, 'o', 'DisplayName', 'Basal Data');
+hold on;
+plot(days, fit_basal(days), '-', 'DisplayName', 'Basal Fit');
+plot(days, suprabasal1, 'o', 'DisplayName', 'Suprabasal1 Data');
+plot(days, fit_suprabasal1(days), '-', 'DisplayName', 'Suprabasal1 Fit');
+plot(days, suprabasal2, 'o', 'DisplayName', 'Suprabasal2 Data');
+plot(days, fit_suprabasal2(days), '-', 'DisplayName', 'Suprabasal2 Fit');
+plot(days, suprabasal3, 'o', 'DisplayName', 'Suprabasal3 Data');
+plot(days, fit_suprabasal3(days), '-', 'DisplayName', 'Suprabasal3 Fit');
+plot(days, suprabasal4, 'o', 'DisplayName', 'Suprabasal4 Data');
+plot(days, fit_suprabasal4(days), '-', 'DisplayName', 'Suprabasal4 Fit');
+xlabel('Days following H3TDR');
+ylabel('Percentage');
+title('Fitted Linear Models for Labeled Nuclei Based on Cell Type');
+legend('show');
+hold off;
+
+% Display goodness of fit
+disp('Goodness of Fit:');
+disp('Basal:');
+disp(gof_basal);
+disp('Suprabasal1:');
+disp(gof_suprabasal1);
+disp('Suprabasal2:');
+disp(gof_suprabasal2);
+disp('Suprabasal3:');
+disp(gof_suprabasal3);
+disp('Suprabasal4:');
+disp(gof_suprabasal4);
+
+
+%%%%%%%%
+%%%%%%%%
+%%%%%%%%
+%%%%%%%% Results: 
+Basal model equation: y = -7.2274 * x + 114.0027
+Suprabasal1 model equation: y = 2.3110 * x + -0.7196
+Suprabasal2 model equation: y = 1.3927 * x + -3.2071
+Suprabasal3 model equation: y = 1.5624 * x + -4.1103
+Suprabasal4 model equation: y = 2.0069 * x + -6.0862
+Goodness of Fit:
+Basal:
+           sse: 650.4150
+       rsquare: 0.9358
+           dfe: 11
+    adjrsquare: 0.9300
+          rmse: 7.6895
+
+Suprabasal1:
+           sse: 258.3349
+       rsquare: 0.7896
+           dfe: 11
+    adjrsquare: 0.7704
+          rmse: 4.8461
+
+Suprabasal2:
+           sse: 51.6272
+       rsquare: 0.8721
+           dfe: 11
+    adjrsquare: 0.8605
+          rmse: 2.1664
+
+Suprabasal3:
+           sse: 104.1179
+       rsquare: 0.8097
+           dfe: 11
+    adjrsquare: 0.7924
+          rmse: 3.0766
+
+Suprabasal4:
+           sse: 320.2222
+       rsquare: 0.6954
+           dfe: 11
+    adjrsquare: 0.6677
+          rmse: 5.3955
+
+
+
