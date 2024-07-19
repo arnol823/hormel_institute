@@ -1,0 +1,86 @@
+% Parameters for oscillating alpha for equ26-28 model with oscillating
+% differentiation time (where it is zero except for peaks around 8 am and 8
+% pm)
+% made with larger fonts for poster print
+
+% Initial values
+N0_initial = 51;  
+N1_initial = 0;  
+
+% Initial population vector
+N_initial = [N0_initial; N1_initial];
+
+% Parameters
+alpha_minus_alpha2 = 0.0481;    
+k_0 = (59/213)/50;   % averaged 0 and 0.0026
+    % set based on ratio of paper: 154/213
+    % note that this represents inverse carrying capacity, therefore the
+    % value itself needs to be smaller, representating a larger carrying
+    % capacity than k_1 
+gamma = 1/8;   % cell cycle length in healthy mouse epidermis
+k_1 = (154/213)/50; % the estimation gave me zero.
+    % I will set this lower as a ratio based on the data from the paper
+    % (59/213 cells = suprabasal - used the oppposite ratio because the k
+    % values represent inverse carrying capacity)
+alpha2 = 0.2332; % previous: 0.2121
+
+% alpha oscillating function
+alpha_0 = 1; % Set the average growth rate
+alpha_1 = 0.05; % Set the amplitude of oscillation
+omega = (2 * pi) / 12; % Set the angular frequency of oscillation
+% omega = 2*pi / T
+% T = period of oscillation
+% in this case, two cycles per 24 hours = approx 12 hour period
+% therefore omega  = 2*pi / 12 = 0.5236
+
+% Oscillating alpha function
+alpha = @(t) alpha_0 + alpha_1 * sin(omega * t);
+
+% Time span
+t_span = [0 100]; % Time from 0 to 1000
+
+%% Function
+function dNdt = populations(t, N, alpha, alpha_minus_alpha2, k_0, gamma, k_1, alpha2)
+    % Unpack the population variables
+    N0 = N(1);
+    N1 = N(2);
+    
+    % Calculate the current value of alpha(t)
+    current_alpha = alpha(t);
+    
+    % Define the differential equations
+    dN0dt = (current_alpha - alpha2) * N0 - k_0 * N0^2;
+    dN1dt = alpha2 * N0 + k_0 * N0^2 - gamma * N1 - k_1 * N1^2;
+    
+    % Return the derivatives as a column vector
+    dNdt = [dN0dt; dN1dt];
+end
+
+%%
+% Solve the differential equations
+[t, N] = ode45(@(t, N) populations(t, N, alpha, alpha_minus_alpha2, k_0, gamma, k_1, alpha2), t_span, N_initial);
+
+% Unpack the solution
+N0 = N(:, 1);
+N1 = N(:, 2);
+
+% Calculate the total population
+N_total = N0 + N1;
+
+% Plot the results
+figure;
+hold on;
+plot(t, N0, '-b', 'LineWidth', 2, 'DisplayName', 'N_0'); % Solid line (blue)
+plot(t, N1, '--g', 'LineWidth', 2, 'DisplayName', 'N_1'); % Dashed line (green)
+plot(t, N_total, ':r', 'LineWidth', 2, 'DisplayName', 'Total Population (N_0 + N_1)'); % Dotted line (red)
+hold off;
+
+% title({'Population Dynamics Using ODE45', ...
+%       '$\frac{dN_0}{dt} = (\alpha(t) - \alpha_2) N_0 - k_0 N_0^2,\quad \frac{dN_1}{dt} = \alpha_2 N_0 + k_0 N_0^2 - \gamma N_1 - k_1 N_1^2$'}, ...
+ %     'Interpreter', 'latex');
+xlabel('Time', 'FontSize', 24);
+ylabel('Cell Populations', 'FontSize', 24);
+legend('show');
+grid on
+
+set(legend, 'FontSize', 16, 'FontWeight', 'bold');
